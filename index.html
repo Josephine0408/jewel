@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>宸第一次月考｜分科目・分單元逐題語音朗讀與互動複習網</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-scale: 1;
+    }
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f4f7fb;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+    .scale-text-stem {
+      font-size: calc(1.15rem * var(--font-scale));
+      line-height: 1.75;
+    }
+    .scale-text-opt {
+      font-size: calc(1.03rem * var(--font-scale));
+      line-height: 1.6;
+    }
+    .scale-text-passage {
+      font-size: calc(1.06rem * var(--font-scale));
+      line-height: 1.8;
+    }
+    .q-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      scroll-margin-top: 150px;
+    }
+    .q-card.speaking-active {
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.28), 0 12px 24px -6px rgba(245, 158, 11, 0.18) !important;
+      background-color: #fffbeb !important;
+      transform: translateY(-2px);
+    }
+    .section-block {
+      scroll-margin-top: 140px;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.9; }
+      50% { transform: scale(1.08); opacity: 0.5; }
+      100% { transform: scale(0.95); opacity: 0.9; }
+    }
+    .speaking-badge {
+      animation: pulse-ring 1.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-28">
+
+  <!-- Initialize Global Data Store -->
+  <script>
+    window.QUIZ_DATA = window.QUIZ_DATA || { social: [], science: [], english: [] };
+  </script>
+  <!-- Load Subject Question Banks -->
+  <script src="data_social_1.js"></script>
+  <script src="data_social_2.js"></script>
+  <script src="data_science_1.js"></script>
+  <script src="data_science_2.js"></script>
+  <script src="data_english.js"></script>
+
+  <!-- Top Sticky Header -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand & Mobile Sidebar Button -->
+      <div class="flex items-center gap-2.5">
+        <button id="btnToggleSidebar" onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700" title="展開單元選單">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white text-xl font-bold shadow-sm">
+            🔊
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-extrabold text-slate-800 tracking-tight leading-tight">
+              宸第一次月考｜逐題語音朗讀複習網
+            </h1>
+            <p class="text-xs text-slate-500 hidden sm:block">分科目・分單元・逐題語音伴讀・即時互動批改</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject Switcher Tabs -->
+      <div class="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200/80" id="subjectTabs">
+        <button onclick="selectSubject('social')" id="tab-social" class="subject-tab px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5">
+          <span>🌍</span><span>社會 (五上)</span>
+          <span id="count-social" class="text-xs px-1.5 py-0.5 rounded-full bg-white/80 text-slate-600"></span>
+        </button>
+        <button onclick="selectSubject('science')" id="tab-science" class="subject-tab px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5">
+          <span>🔬</span><span>自然科學 (五上)</span>
+          <span id="count-science" class="text-xs px-1.5 py-0.5 rounded-full bg-white/80 text-slate-600"></span>
+        </button>
+        <button onclick="selectSubject('english')" id="tab-english" class="subject-tab px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5">
+          <span>🔤</span><span>英語寫作</span>
+          <span id="count-english" class="text-xs px-1.5 py-0.5 rounded-full bg-white/80 text-slate-600"></span>
+        </button>
+      </div>
+
+      <!-- Right Quick Controls: Search, Font Size, Voice Settings -->
+      <div class="flex items-center gap-2">
+        <div class="relative hidden md:block">
+          <input id="searchInput" type="text" oninput="handleSearch(this.value)" placeholder="搜尋題目關鍵字..." class="w-44 lg:w-52 pl-8 pr-7 py-1.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+          <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+          <button id="btnClearSearch" onclick="clearSearch()" class="hidden absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 text-xs">✕</button>
+        </div>
+
+        <!-- Font Scale Buttons -->
+        <div class="flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200" title="調整題目字體大小">
+          <button onclick="setFontScale(0.95)" class="px-2 py-1 text-xs font-bold text-slate-600 hover:text-indigo-600 rounded-lg">A-</button>
+          <button onclick="setFontScale(1.08)" class="px-2 py-1 text-xs font-bold text-slate-700 hover:text-indigo-600 rounded-lg">標準</button>
+          <button onclick="setFontScale(1.25)" class="px-2 py-1 text-sm font-extrabold text-slate-800 hover:text-indigo-600 rounded-lg">A+</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace Layout -->
+  <div class="max-w-7xl w-full mx-auto flex-1 flex gap-5 px-3 sm:px-6 pt-4">
+
+    <!-- Left Sidebar: Unit & Paper Navigation -->
+    <aside id="sidebarOverlay" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs hidden lg:hidden" onclick="toggleMobileSidebar(false)"></aside>
+    <aside id="sidebarPanel" class="fixed lg:static top-0 left-0 z-50 lg:z-10 h-full lg:h-[calc(100vh-5.5rem)] lg:sticky lg:top-20 w-80 lg:w-72 shrink-0 bg-white lg:rounded-2xl border-r lg:border border-slate-200 shadow-xl lg:shadow-xs flex flex-col transition-transform duration-200 -translate-x-full lg:translate-x-0 overflow-hidden">
+      <div class="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 id="sidebarSubjectTitle" class="font-extrabold text-slate-800 text-sm flex items-center gap-1.5">📚 單元與試卷列表</h2>
+          <p id="sidebarStats" class="text-xs text-slate-500 mt-0.5">選擇單元開始逐題朗讀與練習</p>
+        </div>
+        <button onclick="toggleMobileSidebar(false)" class="lg:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-200">✕</button>
+      </div>
+
+      <!-- Mobile Search inside Sidebar -->
+      <div class="p-2.5 border-b border-slate-100 md:hidden">
+        <input id="mobileSearchInput" type="text" oninput="handleSearch(this.value)" placeholder="🔍 搜尋題目關鍵字..." class="w-full px-3 py-1.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+
+      <!-- Unit Group & Rounds List -->
+      <div id="unitListContainer" class="flex-1 overflow-y-auto p-2.5 space-y-3">
+        <!-- Populated dynamically -->
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 space-y-4">
+
+      <!-- Active Unit Header Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span id="currentUnitBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">單元</span>
+              <span id="currentProgressBadge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">進度 0 / 0</span>
+            </div>
+            <h2 id="currentPaperTitle" class="text-lg sm:text-xl font-extrabold text-slate-800">載入中...</h2>
+          </div>
+
+          <!-- Top Action Toolbar for Current Paper -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="startContinuousPlay(0)" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-sm shadow-sm flex items-center gap-1.5 transition-all cursor-pointer">
+              <span>▶️</span><span>從頭連續朗讀本回</span>
+            </button>
+            <button id="btnToggleAllAnswers" onclick="toggleRevealAllAnswers()" class="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs sm:text-sm border border-indigo-200 transition-all cursor-pointer">
+              👁️ 顯示全部答案
+            </button>
+            <button id="btnToggleOriginalPages" onclick="toggleOriginalPagesModal()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm border border-slate-200 transition-all cursor-pointer">
+              🖼️ 查看原卷掃描圖
+            </button>
+            <button onclick="resetCurrentPaper()" class="px-2.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-xs border border-rose-200 transition-all cursor-pointer" title="清除本回作答紀錄">
+              🔄 重置
+            </button>
+          </div>
+        </div>
+
+        <!-- Original Scanned Pages Drawer (Collapsible) -->
+        <div id="originalPagesDrawer" class="hidden mt-4 pt-4 border-t border-slate-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-600">📄 本回原始考卷掃描圖（點擊圖片可放大檢視）：</span>
+            <button onclick="toggleOriginalPagesModal(false)" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">收合 ▲</button>
+          </div>
+          <div id="originalPagesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </div>
+
+        <!-- Section Quick Jump Pills & Filter Bar -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+          <div id="sectionJumpBar" class="flex flex-wrap items-center gap-1.5">
+            <!-- Section pills populated dynamically -->
+          </div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <label class="flex items-center gap-1 cursor-pointer bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg text-slate-700 font-medium">
+              <input type="checkbox" id="chkFilterWrongOrUnanswered" onchange="renderCurrentPaper()" class="rounded text-indigo-600" />
+              <span>只看未答／答錯</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions Container -->
+      <div id="questionsContainer" class="space-y-6">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Bottom Prev/Next Paper Navigation -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between shadow-xs">
+        <button id="btnPrevPaper" onclick="navigatePaper(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
+          <span>⬅️</span><span id="prevPaperLabel">上一回</span>
+        </button>
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100">
+          ⬆️ 回到頂部
+        </button>
+        <button id="btnNextPaper" onclick="navigatePaper(1)" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
+          <span id="nextPaperLabel">下一回</span><span>➡️</span>
+        </button>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Bottom Sticky TTS Audio Player Bar -->
+  <div class="fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-700 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+
+      <!-- Currently Speaking Status -->
+      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <div id="ttsStatusDot" class="w-3 h-3 rounded-full bg-slate-500 shrink-0"></div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span id="ttsCurrentLabel" class="text-xs font-bold text-amber-400 tracking-wide">語音朗讀待命</span>
+            <span id="ttsProgressIndex" class="text-[11px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300"></span>
+          </div>
+          <p id="ttsCurrentPreview" class="text-xs text-slate-300 truncate">點擊任一題目的「🔊 朗讀本題」或上方「▶️ 從頭連續朗讀」開始語音伴讀</p>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button onclick="stepQuestionTts(-1)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 cursor-pointer" title="朗讀上一題">
+          <span>⏮️</span><span class="hidden sm:inline">上一題</span>
+        </button>
+        <button id="btnPlayPauseTts" onclick="togglePlayPauseTts()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center gap-1.5 shadow-sm cursor-pointer">
+          <span id="iconPlayPause">▶️</span><span id="labelPlayPause">開始朗讀</span>
+        </button>
+        <button onclick="stopTts()" class="p-2 rounded-xl bg-slate-800 hover:bg-rose-600/80 text-slate-200 text-xs font-bold cursor-pointer" title="停止朗讀">
+          ⏹️
+        </button>
+        <button onclick="stepQuestionTts(1)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 cursor-pointer" title="朗讀下一題">
+          <span class="hidden sm:inline">下一題</span><span>⏭️</span>
+        </button>
+      </div>
+
+      <!-- TTS Settings: Auto-next, Read options, Read answer, Speed -->
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <label class="flex items-center gap-1 bg-slate-800 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-slate-700 select-none" title="讀完一題後自動接續讀下一題">
+          <input type="checkbox" id="chkAutoNext" checked class="rounded text-amber-500" />
+          <span>連續伴讀</span>
+        </label>
+        <label class="flex items-center gap-1 bg-slate-800 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-slate-700 select-none" title="朗讀題幹後一併朗讀選項">
+          <input type="checkbox" id="chkReadOptions" checked class="rounded text-amber-500" />
+          <span>讀選項</span>
+        </label>
+        <label class="flex items-center gap-1 bg-slate-800 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-slate-700 select-none" title="朗讀完題目後自動公布並朗讀答案與解析">
+          <input type="checkbox" id="chkReadAnswer" class="rounded text-amber-500" />
+          <span>含答案解析</span>
+        </label>
+
+        <!-- Speed Selector -->
+        <div class="flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-xl">
+          <span class="text-slate-400">語速</span>
+          <select id="ttsRateSelect" onchange="updateTtsRate(this.value)" class="bg-transparent text-amber-300 font-bold focus:outline-none cursor-pointer">
+            <option value="0.75" class="bg-slate-900 text-white">0.75x 慢</option>
+            <option value="0.9" class="bg-slate-900 text-white">0.9x 適中</option>
+            <option value="1.0" selected class="bg-slate-900 text-white">1.0x 標準</option>
+            <option value="1.15" class="bg-slate-900 text-white">1.15x 稍快</option>
+            <option value="1.3" class="bg-slate-900 text-white">1.3x 快</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Fullscreen Image Lightbox Modal -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs hidden items-center justify-center p-4" onclick="closeLightbox()">
+    <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col items-center" onclick="event.stopPropagation()">
+      <div class="w-full flex items-center justify-between text-white mb-2 px-2">
+        <span id="lightboxCaption" class="text-sm font-bold">原卷圖表檢視</span>
+        <button onclick="closeLightbox()" class="px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm font-bold">✕ 關閉</button>
+      </div>
+      <div class="overflow-auto max-h-[85vh] w-full bg-white rounded-xl p-2 flex justify-center">
+        <img id="lightboxImg" src="" alt="原卷掃描圖" class="max-w-full h-auto object-contain" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Logic -->
+  <script>
+    // State Management
+    const STATE = {
+      currentSubject: 'social', // 'social' | 'science' | 'english'
+      currentPaperId: null,
+      searchQuery: '',
+      revealAll: false,
+      userAnswers: {}, // key: `${paperId}_${sectionId}_${qIndex}` -> selectedOption
+      revealedQuestions: {}, // key: `${paperId}_${sectionId}_${qIndex}` -> boolean
+      flatQuestions: [], // flattened list of questions in current paper for sequential TTS
+      activeFlatIndex: -1,
+      isSpeaking: false,
+      isPaused: false,
+      ttsRate: 1.0,
+      zhVoice: null,
+      enVoice: null
+    };
+
+    // Load saved answers from localStorage
+    try {
+      const saved = localStorage.getItem('chen_exam_answers_v1');
+      if (saved) STATE.userAnswers = JSON.parse(saved);
+    } catch (e) {}
+
+    function saveUserAnswers() {
+      try {
+        localStorage.setItem('chen_exam_answers_v1', JSON.stringify(STATE.userAnswers));
+      } catch (e) {}
+    }
+
+    // Initialize SpeechSynthesis Voices
+    function initVoices() {
+      if (!('speechSynthesis' in window)) return;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || !voices.length) return;
+
+      // Pick best Traditional Chinese voice (zh-TW preferred)
+      STATE.zhVoice =
+        voices.find(v => v.lang === 'zh-TW' && (v.name.includes('Natural') || v.name.includes('Hsiao') || v.name.includes('Yating') || v.name.includes('Google'))) ||
+        voices.find(v => v.lang === 'zh-TW') ||
+        voices.find(v => v.lang && v.lang.toLowerCase().includes('zh')) ||
+        null;
+
+      // Pick best English voice
+      STATE.enVoice =
+        voices.find(v => v.lang === 'en-US' && (v.name.includes('Natural') || v.name.includes('Aria') || v.name.includes('Jenny') || v.name.includes('Google'))) ||
+        voices.find(v => v.lang === 'en-US') ||
+        voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) ||
+        null;
+    }
+
+    if ('speechSynthesis' in window) {
+      initVoices();
+      window.speechSynthesis.onvoiceschanged = initVoices;
+    }
+
+    // Font scaling
+    function setFontScale(scale) {
+      document.documentElement.style.setProperty('--font-scale', scale);
+    }
+
+    // Helper: Count total questions in a subject
+    function getSubjectStats(subjectKey) {
+      const papers = window.QUIZ_DATA[subjectKey] || [];
+      let totalQ = 0;
+      papers.forEach(p => {
+        (p.sections || []).forEach(s => {
+          totalQ += (s.questions || []).length;
+        });
+      });
+      return { paperCount: papers.length, questionCount: totalQ };
+    }
+
+    function updateSubjectTabCounts() {
+      ['social', 'science', 'english'].forEach(sub => {
+        const st = getSubjectStats(sub);
+        const el = document.getElementById(`count-${sub}`);
+        if (el) el.textContent = `${st.paperCount}回 / ${st.questionCount}題`;
+      });
+    }
+
+    // Switch Subject
+    function selectSubject(subjectKey) {
+      stopTts();
+      STATE.currentSubject = subjectKey;
+      STATE.revealAll = false;
+
+      // Update active tab styling
+      ['social', 'science', 'english'].forEach(sub => {
+        const btn = document.getElementById(`tab-${sub}`);
+        if (!btn) return;
+        if (sub === subjectKey) {
+          btn.className = 'subject-tab px-3.5 py-1.5 rounded-xl text-sm font-extrabold transition-all flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm cursor-pointer';
+        } else {
+          btn.className = 'subject-tab px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-white/60 cursor-pointer';
+        }
+      });
+
+      const papers = window.QUIZ_DATA[subjectKey] || [];
+      if (papers.length > 0) {
+        STATE.currentPaperId = papers[0].id;
+      } else {
+        STATE.currentPaperId = null;
+      }
+
+      renderSidebar();
+      renderCurrentPaper();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Select Paper / Unit
+    function selectPaper(paperId) {
+      stopTts();
+      STATE.currentPaperId = paperId;
+      STATE.revealAll = false;
+      toggleMobileSidebar(false);
+      renderSidebar();
+      renderCurrentPaper();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function navigatePaper(delta) {
+      const papers = window.QUIZ_DATA[STATE.currentSubject] || [];
+      const idx = papers.findIndex(p => p.id === STATE.currentPaperId);
+      if (idx === -1) return;
+      const targetIdx = idx + delta;
+      if (targetIdx >= 0 && targetIdx < papers.length) {
+        selectPaper(papers[targetIdx].id);
+      }
+    }
+
+    function toggleMobileSidebar(force) {
+      const overlay = document.getElementById('sidebarOverlay');
+      const panel = document.getElementById('sidebarPanel');
+      const isOpen = !panel.classList.contains('-translate-x-full');
+      const nextState = typeof force === 'boolean' ? force : !isOpen;
+      if (nextState) {
+        panel.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+      } else {
+        panel.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    // Render Sidebar Grouped by Unit
+    function renderSidebar() {
+      const papers = window.QUIZ_DATA[STATE.currentSubject] || [];
+      const container = document.getElementById('unitListContainer');
+      const subjectNames = {
+        social: '🌍 社會科 (五上)',
+        science: '🔬 自然科學 (五上)',
+        english: '🔤 英語寫作 (English)'
+      };
+      document.getElementById('sidebarSubjectTitle').textContent = subjectNames[STATE.currentSubject] || '單元列表';
+      const st = getSubjectStats(STATE.currentSubject);
+      document.getElementById('sidebarStats').textContent = `共 ${st.paperCount} 份單元試卷・${st.questionCount} 道題目`;
+
+      // Group papers by unitGroup
+      const groups = [];
+      const groupMap = {};
+      papers.forEach(p => {
+        const gName = p.unitGroup || '所有單元';
+        if (!groupMap[gName]) {
+          groupMap[gName] = [];
+          groups.push({ name: gName, items: groupMap[gName] });
+        }
+        groupMap[gName].push(p);
+      });
+
+      container.innerHTML = groups.map(g => {
+        const itemsHtml = g.items.map(p => {
+          const isActive = p.id === STATE.currentPaperId;
+          const prog = getPaperProgress(p);
+          return `
+            <button onclick="selectPaper('${p.id}')" class="w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center justify-between gap-2 cursor-pointer ${
+              isActive
+                ? 'bg-indigo-600 text-white font-bold shadow-xs'
+                : 'hover:bg-slate-100 text-slate-700 font-medium'
+            }">
+              <div class="min-w-0 flex-1">
+                <div class="text-sm truncate">${escapeHtml(p.shortTitle || p.title)}</div>
+                <div class="text-[11px] ${isActive ? 'text-indigo-100' : 'text-slate-400'}">
+                  共 ${prog.total} 題 ${prog.answered > 0 ? `・已答 ${prog.answered} 題` : ''}
+                </div>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full shrink-0 ${
+                isActive ? 'bg-white/20 text-white' : prog.answered === prog.total && prog.total > 0 ? 'bg-emerald-100 text-emerald-700 font-bold' : 'bg-slate-100 text-slate-500'
+              }">
+                ${prog.answered}/${prog.total}
+              </span>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div class="space-y-1">
+            <div class="px-2.5 py-1 text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <span>📂</span><span>${escapeHtml(g.name)}</span>
+            </div>
+            <div class="space-y-1">${itemsHtml}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getPaperProgress(paper) {
+      let total = 0;
+      let answered = 0;
+      let correct = 0;
+      (paper.sections || []).forEach((s, sIdx) => {
+        (s.questions || []).forEach((q, qIdx) => {
+          total++;
+          const key = `${paper.id}_${sIdx}_${qIdx}`;
+          const ua = STATE.userAnswers[key];
+          if (ua !== undefined && ua !== null && ua !== '') {
+            answered++;
+            if (isAnswerMatch(ua, q.answer)) correct++;
+          }
+        });
+      });
+      return { total, answered, correct };
+    }
+
+    // Check if selected option matches answer
+    function isAnswerMatch(selected, correctAns) {
+      if (!selected || !correctAns) return false;
+      const s = String(selected).trim();
+      const c = String(correctAns).trim();
+      if (s === c) return true;
+      // Check prefix match for ○ / × / ① / ② / ③ / ④ / ✓ / ✗
+      const prefixes = ['○', '×', '①', '②', '③', '④', '✓', '✗'];
+      for (const p of prefixes) {
+        if (s.startsWith(p) && c.startsWith(p)) return true;
+      }
+      return false;
+    }
+
+    // Render Current Paper and Questions
+    function renderCurrentPaper() {
+      const papers = window.QUIZ_DATA[STATE.currentSubject] || [];
+      const paper = papers.find(p => p.id === STATE.currentPaperId) || papers[0];
+      const container = document.getElementById('questionsContainer');
+
+      if (!paper) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-8 text-center text-slate-500">尚無試卷資料</div>`;
+        return;
+      }
+
+      // Header Info
+      document.getElementById('currentUnitBadge').textContent = paper.unitGroup || '單元練習';
+      document.getElementById('currentPaperTitle').textContent = paper.title;
+      const prog = getPaperProgress(paper);
+      document.getElementById('currentProgressBadge').textContent =
+        `已作答 ${prog.answered} / ${prog.total} 題（答對 ${prog.correct} 題）`;
+
+      // Update Reveal All Button
+      const btnReveal = document.getElementById('btnToggleAllAnswers');
+      btnReveal.textContent = STATE.revealAll ? '🙈 隱藏全部答案' : '👁️ 顯示全部答案';
+
+      // Original Pages Drawer
+      const btnOrig = document.getElementById('btnToggleOriginalPages');
+      const pagesGrid = document.getElementById('originalPagesGrid');
+      if (paper.pages && paper.pages.length > 0) {
+        btnOrig.classList.remove('hidden');
+        pagesGrid.innerHTML = paper.pages.map((imgUrl, idx) => `
+          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 p-2">
+            <div class="text-xs font-bold text-slate-600 mb-1.5 flex items-center justify-between">
+              <span>📄 第 ${idx + 1} 頁 (${imgUrl})</span>
+              <button onclick="openLightbox('${imgUrl}', '${escapeHtml(paper.title)} - 第 ${idx + 1} 頁')" class="text-indigo-600 hover:underline">🔍 點擊放大</button>
+            </div>
+            <img src="${imgUrl}" alt="原卷第 ${idx + 1} 頁" onclick="openLightbox('${imgUrl}', '${escapeHtml(paper.title)} - 第 ${idx + 1} 頁')" class="w-full h-auto rounded-lg cursor-zoom-in border border-slate-200" loading="lazy" />
+          </div>
+        `).join('');
+      } else {
+        btnOrig.classList.add('hidden');
+        document.getElementById('originalPagesDrawer').classList.add('hidden');
+      }
+
+      // Section Jump Pills
+      const jumpBar = document.getElementById('sectionJumpBar');
+      jumpBar.innerHTML = (paper.sections || []).map((sec, sIdx) => {
+        const shortSecTitle = (sec.title || '').split('（')[0].split('(')[0];
+        return `
+          <button onclick="scrollToSection('sec-${sIdx}')" class="px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200 transition-all cursor-pointer">
+            ${escapeHtml(shortSecTitle)}
+          </button>
+        `;
+      }).join('');
+
+      // Prev / Next Paper Buttons
+      const paperIdx = papers.findIndex(p => p.id === paper.id);
+      const btnPrev = document.getElementById('btnPrevPaper');
+      const btnNext = document.getElementById('btnNextPaper');
+      btnPrev.disabled = paperIdx <= 0;
+      btnNext.disabled = paperIdx >= papers.length - 1;
+      document.getElementById('prevPaperLabel').textContent = paperIdx > 0 ? (papers[paperIdx - 1].shortTitle || '上一回') : '上一回';
+      document.getElementById('nextPaperLabel').textContent = paperIdx < papers.length - 1 ? (papers[paperIdx + 1].shortTitle || '下一回') : '下一回';
+
+      // Build Flat Questions List & Render Sections
+      STATE.flatQuestions = [];
+      const filterOnlyWrong = document.getElementById('chkFilterWrongOrUnanswered')?.checked;
+      const query = (STATE.searchQuery || '').trim().toLowerCase();
+
+      const sectionsHtml = (paper.sections || []).map((sec, sIdx) => {
+        const questionsHtml = (sec.questions || []).map((q, qIdx) => {
+          const qKey = `${paper.id}_${sIdx}_${qIdx}`;
+          const flatIdx = STATE.flatQuestions.length;
+          STATE.flatQuestions.push({
+            flatIdx,
+            paperId: paper.id,
+            sIdx,
+            qIdx,
+            qKey,
+            sectionTitle: sec.title,
+            question: q
+          });
+
+          const userAns = STATE.userAnswers[qKey];
+          const isAnswered = userAns !== undefined && userAns !== null && userAns !== '';
+          const isCorrect = isAnswered && isAnswerMatch(userAns, q.answer);
+          const isRevealed = STATE.revealAll || STATE.revealedQuestions[qKey] || isAnswered;
+
+          // Filter check
+          if (filterOnlyWrong && isAnswered && isCorrect) {
+            return '';
+          }
+          if (query) {
+            const hay = `${q.stem} ${(q.options || []).join(' ')} ${q.explanation || ''} ${sec.passage || ''}`.toLowerCase();
+            if (!hay.includes(query)) return '';
+          }
+
+          // Render Options
+          const options = q.options || ['○ 正確', '× 錯誤'];
+          const isTfOrCheck = q.type === 'tf' || q.type === 'check';
+          const gridCols = isTfOrCheck
+            ? 'grid-cols-2 sm:grid-cols-2 max-w-md'
+            : options.some(o => o.length > 18)
+            ? 'grid-cols-1'
+            : 'grid-cols-1 sm:grid-cols-2';
+
+          const optionsHtml = options.map((opt, oIdx) => {
+            const isSelected = userAns === opt;
+            const isThisCorrectOption = isAnswerMatch(opt, q.answer);
+            let btnStyle = 'bg-slate-50 hover:bg-indigo-50/70 text-slate-800 border-slate-200';
+
+            if (isRevealed) {
+              if (isThisCorrectOption) {
+                btnStyle = 'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold ring-2 ring-emerald-500/20';
+              } else if (isSelected && !isThisCorrectOption) {
+                btnStyle = 'bg-rose-50 border-rose-400 text-rose-900 line-through opacity-85';
+              }
+            } else if (isSelected) {
+              btnStyle = 'bg-indigo-50 border-indigo-500 text-indigo-900 font-bold';
+            }
+
+            return `
+              <div class="flex items-stretch gap-1.5">
+                <button onclick="handleSelectOption('${qKey}', ${flatIdx}, ${oIdx})" class="flex-1 text-left px-3.5 py-2.5 rounded-xl border ${btnStyle} scale-text-opt transition-all flex items-center justify-between gap-2 cursor-pointer">
+                  <span>${escapeHtml(opt)}</span>
+                  ${isRevealed && isThisCorrectOption ? '<span class="text-emerald-600 font-extrabold shrink-0">✓ 正解</span>' : ''}
+                  ${isRevealed && isSelected && !isThisCorrectOption ? '<span class="text-rose-600 font-bold shrink-0">✗ 誤選</span>' : ''}
+                </button>
+                <button onclick="speakSingleText(${flatIdx}, 'option', ${oIdx})" class="px-2.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-slate-500 hover:text-amber-600 text-xs shrink-0 cursor-pointer" title="單獨朗讀此選項">
+                  🔈
+                </button>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div id="qcard-${flatIdx}" class="q-card bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs">
+              <!-- Question Top Row: Number, Badges & TTS Controls -->
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-2xs">
+                    第 ${escapeHtml(String(q.no))} 題
+                  </span>
+                  ${isAnswered ? (
+                    isCorrect
+                      ? '<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">✅ 答對</span>'
+                      : '<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700">❌ 需複習</span>'
+                  ) : '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">尚未作答</span>'}
+                </div>
+
+                <!-- Per-Question TTS Action Buttons -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <button onclick="speakQuestion(${flatIdx}, 'full')" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center gap-1 shadow-2xs transition-all cursor-pointer" title="朗讀本題題幹與選項">
+                    <span>🔊</span><span>朗讀本題</span>
+                  </button>
+                  <button onclick="speakQuestion(${flatIdx}, 'stem')" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs cursor-pointer" title="只朗讀題幹">
+                    📖 讀題幹
+                  </button>
+                  <button onclick="startContinuousPlay(${flatIdx})" class="px-2.5 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 font-semibold text-xs cursor-pointer" title="從此題開始往下連續朗讀">
+                    ▶️ 從此連續讀
+                  </button>
+                  <button onclick="toggleQuestionAnswer('${qKey}', ${flatIdx})" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 font-semibold text-xs border border-slate-200 cursor-pointer">
+                    ${isRevealed ? '🙈 隱藏答案' : '💡 看答案/朗讀解析'}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Question Stem (Clickable to read) -->
+              <div onclick="speakQuestion(${flatIdx}, 'stem')" class="scale-text-stem font-bold text-slate-800 mb-3.5 cursor-pointer hover:text-indigo-950 transition-colors" title="點擊題幹即可朗讀">
+                ${formatStemHtml(q.stem)}
+              </div>
+
+              <!-- Options Grid -->
+              <div class="grid ${gridCols} gap-2.5">
+                ${optionsHtml}
+              </div>
+
+              <!-- Answer & Explanation Box -->
+              <div class="${isRevealed ? 'block' : 'hidden'} mt-3.5 pt-3 border-t border-slate-200/80 bg-slate-50/80 rounded-xl p-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="text-sm font-extrabold text-emerald-700 flex items-center gap-1.5">
+                    <span>🎯 正確答案：</span>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900">${escapeHtml(String(q.answer))}</span>
+                  </div>
+                  <button onclick="speakQuestion(${flatIdx}, 'explanation')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer">
+                    <span>🔊</span><span>朗讀答案與解析</span>
+                  </button>
+                </div>
+                ${q.explanation ? `<p class="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">💡 <strong>解析：</strong>${escapeHtml(q.explanation)}</p>` : ''}
+              </div>
+            </div>
+          `;
+        }).filter(Boolean).join('');
+
+        if (!questionsHtml) return '';
+
+        // Optional section passage / word bank / diagram
+        const hasPassage = sec.passage && sec.passage.trim().length > 0;
+        const hasImage = sec.image && sec.image.trim().length > 0;
+
+        return `
+          <section id="sec-${sIdx}" class="section-block space-y-3">
+            <!-- Section Header Banner -->
+            <div class="bg-gradient-to-r from-indigo-900 to-slate-800 text-white rounded-2xl p-4 shadow-xs">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-base sm:text-lg font-extrabold">${escapeHtml(sec.title)}</h3>
+                  ${sec.instruction ? `<p class="text-xs text-indigo-200 mt-0.5">${escapeHtml(sec.instruction)}</p>` : ''}
+                </div>
+                ${hasPassage ? `
+                  <button onclick="speakSectionPassage(${sIdx})" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer">
+                    <span>🔊</span><span>朗讀本大題短文／題組說明</span>
+                  </button>
+                ` : ''}
+              </div>
+
+              ${hasPassage ? `
+                <div class="mt-3 p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-amber-50 scale-text-passage whitespace-pre-line">
+                  ${escapeHtml(sec.passage)}
+                </div>
+              ` : ''}
+
+              ${hasImage ? `
+                <div class="mt-3 bg-white rounded-xl p-2 text-slate-800">
+                  <div class="flex items-center justify-between text-xs font-bold text-slate-600 mb-1 px-1">
+                    <span>🗺️ 本大題參考圖表（可點擊放大檢視）：</span>
+                    <button onclick="openLightbox('${sec.image}', '${escapeHtml(sec.title)}')" class="text-indigo-600 hover:underline">🔍 全螢幕放大圖表</button>
+                  </div>
+                  <img src="${sec.image}" alt="${escapeHtml(sec.title)}" onclick="openLightbox('${sec.image}', '${escapeHtml(sec.title)}')" class="max-h-80 w-auto mx-auto rounded-lg cursor-zoom-in border border-slate-200" loading="lazy" />
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Section Questions List -->
+            <div class="space-y-3">
+              ${questionsHtml}
+            </div>
+          </section>
+        `;
+      }).filter(Boolean).join('');
+
+      container.innerHTML = sectionsHtml || `
+        <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500">
+          沒有符合篩選或搜尋條件的題目。
+        </div>
+      `;
+    }
+
+    // Option Selection & Answer Reveal Handlers
+    function handleSelectOption(qKey, flatIdx, optIdx) {
+      const item = STATE.flatQuestions[flatIdx];
+      if (!item) return;
+      const opt = (item.question.options || ['○ 正確', '× 錯誤'])[optIdx];
+      STATE.userAnswers[qKey] = opt;
+      STATE.revealedQuestions[qKey] = true;
+      saveUserAnswers();
+      renderCurrentPaper();
+      renderSidebar();
+    }
+
+    function toggleQuestionAnswer(qKey, flatIdx) {
+      const currentlyRevealed = STATE.revealAll || STATE.revealedQuestions[qKey] || (STATE.userAnswers[qKey] !== undefined);
+      if (currentlyRevealed && !STATE.revealAll) {
+        delete STATE.revealedQuestions[qKey];
+        delete STATE.userAnswers[qKey];
+        saveUserAnswers();
+        renderCurrentPaper();
+      } else {
+        STATE.revealedQuestions[qKey] = true;
+        renderCurrentPaper();
+        speakQuestion(flatIdx, 'explanation');
+      }
+    }
+
+    function toggleRevealAllAnswers() {
+      STATE.revealAll = !STATE.revealAll;
+      renderCurrentPaper();
+    }
+
+    function resetCurrentPaper() {
+      const papers = window.QUIZ_DATA[STATE.currentSubject] || [];
+      const paper = papers.find(p => p.id === STATE.currentPaperId);
+      if (!paper) return;
+      (paper.sections || []).forEach((s, sIdx) => {
+        (s.questions || []).forEach((q, qIdx) => {
+          const key = `${paper.id}_${sIdx}_${qIdx}`;
+          delete STATE.userAnswers[key];
+          delete STATE.revealedQuestions[key];
+        });
+      });
+      STATE.revealAll = false;
+      saveUserAnswers();
+      renderCurrentPaper();
+      renderSidebar();
+    }
+
+    function toggleOriginalPagesModal(force) {
+      const drawer = document.getElementById('originalPagesDrawer');
+      const isHidden = drawer.classList.contains('hidden');
+      const shouldShow = typeof force === 'boolean' ? force : isHidden;
+      if (shouldShow) drawer.classList.remove('hidden');
+      else drawer.classList.add('hidden');
+    }
+
+    function scrollToSection(secId) {
+      const el = document.getElementById(secId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Search
+    function handleSearch(val) {
+      STATE.searchQuery = val || '';
+      const clearBtn = document.getElementById('btnClearSearch');
+      if (clearBtn) {
+        if (STATE.searchQuery) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+      renderCurrentPaper();
+    }
+
+    function clearSearch() {
+      const inp = document.getElementById('searchInput');
+      const mInp = document.getElementById('mobileSearchInput');
+      if (inp) inp.value = '';
+      if (mInp) mInp.value = '';
+      handleSearch('');
+    }
+
+    // Lightbox
+    function openLightbox(imgSrc, caption) {
+      document.getElementById('lightboxImg').src = imgSrc;
+      document.getElementById('lightboxCaption').textContent = caption || '原卷掃描圖';
+      const modal = document.getElementById('lightboxModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeLightbox() {
+      const modal = document.getElementById('lightboxModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // =========================================================================
+    // SMART TEXT-TO-SPEECH (TTS) ENGINE (Supports Chinese & English seamlessly)
+    // =========================================================================
+
+    function cleanTextForSpeech(text, isEnglishSubject) {
+      if (!text) return '';
+      let t = String(text);
+      // Replace symbols for natural reading
+      t = t
+        .replace(/（\s*）/g, ' ')
+        .replace(/\(\s*\)/g, ' ')
+        .replace(/_{2,}/g, isEnglishSubject ? ' blank ' : ' 空格 ')
+        .replace(/＿＿＿＿/g, ' 空格 ')
+        .replace(/①/g, ' 選項一，')
+        .replace(/②/g, ' 選項二，')
+        .replace(/③/g, ' 選項三，')
+        .replace(/④/g, ' 選項四，')
+        .replace(/⑤/g, ' 選項五，')
+        .replace(/⑥/g, ' 選項六，')
+        .replace(/○/g, ' 圈 ')
+        .replace(/×/g, ' 叉 ')
+        .replace(/✓/g, ' 打勾 ')
+        .replace(/✗/g, ' 不勾選 ')
+        .replace(/℃/g, ' 攝氏度 ')
+        .replace(/→/g, ' 到 ');
+      return t.replace(/\s+/g, ' ').trim();
+    }
+
+    function buildQuestionSpeechText(item, mode) {
+      const q = item.question;
+      const isEng = STATE.currentSubject === 'english';
+      const readOpts = document.getElementById('chkReadOptions')?.checked;
+      const readAns = document.getElementById('chkReadAnswer')?.checked;
+
+      if (mode === 'stem') {
+        const prefix = isEng ? `Question ${q.no}. ` : `第 ${q.no} 題：`;
+        return prefix + cleanTextForSpeech(q.ttsText || q.stem, isEng);
+      }
+
+      if (mode === 'explanation') {
+        const ansPart = isEng
+          ? `The correct answer is: ${cleanTextForSpeech(q.answer, true)}. `
+          : `第 ${q.no} 題正確答案是：${cleanTextForSpeech(q.answer, false)}。`;
+        const expPart = q.explanation ? `解析：${cleanTextForSpeech(q.explanation, false)}` : '';
+        return ansPart + expPart;
+      }
+
+      // Full mode
+      let parts = [];
+      const prefix = isEng ? `Question ${q.no}. ` : `第 ${q.no} 題：`;
+      parts.push(prefix + cleanTextForSpeech(q.ttsText || q.stem, isEng));
+
+      if (readOpts && q.options && q.options.length > 0 && q.type !== 'tf') {
+        const optsStr = q.options.map((o, idx) => {
+          if (/^[①②③④⑤⑥ABCD1-6]/.test(o.trim())) {
+            return cleanTextForSpeech(o, isEng);
+          }
+          return (isEng ? `Option ${idx + 1}: ` : `選項 ${idx + 1}：`) + cleanTextForSpeech(o, isEng);
+        }).join(isEng ? '. ' : '；');
+        parts.push(optsStr);
+      }
+
+      if (readAns) {
+        parts.push(isEng ? `Answer: ${cleanTextForSpeech(q.answer, true)}.` : `答案是：${cleanTextForSpeech(q.answer, false)}。`);
+        if (q.explanation) {
+          parts.push(`解析：${cleanTextForSpeech(q.explanation, false)}`);
+        }
+      }
+
+      return parts.join(' ');
+    }
+
+    function highlightQuestionCard(flatIdx) {
+      document.querySelectorAll('.q-card.speaking-active').forEach(el => {
+        el.classList.remove('speaking-active');
+      });
+      if (flatIdx >= 0) {
+        const el = document.getElementById(`qcard-${flatIdx}`);
+        if (el) {
+          el.classList.add('speaking-active');
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    function updateTtsPlayerUI(statusText, previewText) {
+      const dot = document.getElementById('ttsStatusDot');
+      const label = document.getElementById('ttsCurrentLabel');
+      const preview = document.getElementById('ttsCurrentPreview');
+      const idxBadge = document.getElementById('ttsProgressIndex');
+      const iconPP = document.getElementById('iconPlayPause');
+      const labelPP = document.getElementById('labelPlayPause');
+
+      if (STATE.isSpeaking && !STATE.isPaused) {
+        dot.className = 'w-3 h-3 rounded-full bg-amber-400 speaking-badge shrink-0';
+        iconPP.textContent = '⏸️';
+        labelPP.textContent = '暫停';
+      } else if (STATE.isPaused) {
+        dot.className = 'w-3 h-3 rounded-full bg-blue-400 shrink-0';
+        iconPP.textContent = '▶️';
+        labelPP.textContent = '繼續';
+      } else {
+        dot.className = 'w-3 h-3 rounded-full bg-slate-500 shrink-0';
+        iconPP.textContent = '▶️';
+        labelPP.textContent = '開始朗讀';
+      }
+
+      if (statusText) label.textContent = statusText;
+      if (previewText) preview.textContent = previewText;
+      if (STATE.activeFlatIndex >= 0 && STATE.flatQuestions.length > 0) {
+        idxBadge.textContent = `${STATE.activeFlatIndex + 1} / ${STATE.flatQuestions.length}`;
+      } else {
+        idxBadge.textContent = '';
+      }
+    }
+
+    function speakTextUtterance(text, langPref, onEndCallback) {
+      if (!('speechSynthesis' in window)) {
+        alert('您的瀏覽器不支援 Web Speech API 語音朗讀功能，建議使用 Edge 或 Chrome 瀏覽器。');
+        return;
+      }
+      window.speechSynthesis.cancel();
+
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = STATE.ttsRate;
+
+      // Determine language based on text ratio or preference
+      const asciiLetters = (text.match(/[a-zA-Z]/g) || []).length;
+      const cjkChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+      const useEnglish = (langPref === 'en') || (asciiLetters > cjkChars * 2 && asciiLetters > 10);
+
+      if (useEnglish) {
+        utter.lang = 'en-US';
+        if (STATE.enVoice) utter.voice = STATE.enVoice;
+      } else {
+        utter.lang = 'zh-TW';
+        if (STATE.zhVoice) utter.voice = STATE.zhVoice;
+      }
+
+      utter.onend = () => {
+        if (onEndCallback) onEndCallback();
+      };
+      utter.onerror = () => {
+        STATE.isSpeaking = false;
+        STATE.isPaused = false;
+        updateTtsPlayerUI('語音朗讀待命', '朗讀已停止');
+      };
+
+      STATE.isSpeaking = true;
+      STATE.isPaused = false;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function speakQuestion(flatIdx, mode = 'full', isContinuousChain = false) {
+      const item = STATE.flatQuestions[flatIdx];
+      if (!item) return;
+
+      STATE.activeFlatIndex = flatIdx;
+      highlightQuestionCard(flatIdx);
+
+      const speechText = buildQuestionSpeechText(item, mode);
+      const q = item.question;
+      updateTtsPlayerUI(
+        `正在朗讀：第 ${q.no} 題`,
+        q.stem
+      );
+
+      const langPref = (STATE.currentSubject === 'english' && mode !== 'explanation') ? 'en' : 'zh';
+
+      speakTextUtterance(speechText, langPref, () => {
+        const autoNext = document.getElementById('chkAutoNext')?.checked;
+        if ((isContinuousChain || autoNext) && mode === 'full' && STATE.isSpeaking) {
+          const nextIdx = flatIdx + 1;
+          if (nextIdx < STATE.flatQuestions.length) {
+            setTimeout(() => {
+              if (STATE.isSpeaking && !STATE.isPaused) {
+                speakQuestion(nextIdx, 'full', true);
+              }
+            }, 900);
+            return;
+          }
+        }
+        STATE.isSpeaking = false;
+        STATE.isPaused = false;
+        updateTtsPlayerUI('朗讀完成', `已完成第 ${q.no} 題朗讀`);
+      });
+    }
+
+    function speakSingleText(flatIdx, type, optIdx) {
+      const item = STATE.flatQuestions[flatIdx];
+      if (!item) return;
+      STATE.activeFlatIndex = flatIdx;
+      highlightQuestionCard(flatIdx);
+      const optText = (item.question.options || [])[optIdx] || '';
+      const isEng = STATE.currentSubject === 'english';
+      updateTtsPlayerUI(`朗讀第 ${item.question.no} 題選項`, optText);
+      speakTextUtterance(cleanTextForSpeech(optText, isEng), isEng ? 'en' : 'zh', () => {
+        STATE.isSpeaking = false;
+        updateTtsPlayerUI('語音朗讀待命', optText);
+      });
+    }
+
+    function speakSectionPassage(sIdx) {
+      const papers = window.QUIZ_DATA[STATE.currentSubject] || [];
+      const paper = papers.find(p => p.id === STATE.currentPaperId);
+      if (!paper || !paper.sections[sIdx]) return;
+      const sec = paper.sections[sIdx];
+      const text = sec.passageTts || sec.passage || sec.instruction || sec.title;
+      const isEng = STATE.currentSubject === 'english';
+      updateTtsPlayerUI(`正在朗讀短文：${sec.title}`, text);
+      speakTextUtterance(cleanTextForSpeech(text, isEng), isEng ? 'en' : 'zh', () => {
+        STATE.isSpeaking = false;
+        updateTtsPlayerUI('短文朗讀完成', sec.title);
+      });
+    }
+
+    function startContinuousPlay(startIdx = 0) {
+      if (STATE.flatQuestions.length === 0) return;
+      const chk = document.getElementById('chkAutoNext');
+      if (chk) chk.checked = true;
+      speakQuestion(startIdx, 'full', true);
+    }
+
+    function togglePlayPauseTts() {
+      if (!('speechSynthesis' in window)) return;
+      if (STATE.isSpeaking && !STATE.isPaused) {
+        window.speechSynthesis.pause();
+        STATE.isPaused = true;
+        updateTtsPlayerUI('已暫停朗讀');
+      } else if (STATE.isSpeaking && STATE.isPaused) {
+        window.speechSynthesis.resume();
+        STATE.isPaused = false;
+        updateTtsPlayerUI('繼續朗讀中');
+      } else {
+        const startIdx = STATE.activeFlatIndex >= 0 ? STATE.activeFlatIndex : 0;
+        speakQuestion(startIdx, 'full', true);
+      }
+    }
+
+    function stopTts() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      STATE.isSpeaking = false;
+      STATE.isPaused = false;
+      highlightQuestionCard(-1);
+      updateTtsPlayerUI('語音朗讀待命', '點擊任一題目的「🔊 朗讀本題」或上方「▶️ 從頭連續朗讀」開始語音伴讀');
+    }
+
+    function stepQuestionTts(delta) {
+      if (STATE.flatQuestions.length === 0) return;
+      let nextIdx = (STATE.activeFlatIndex >= 0 ? STATE.activeFlatIndex : 0) + delta;
+      if (nextIdx < 0) nextIdx = 0;
+      if (nextIdx >= STATE.flatQuestions.length) nextIdx = STATE.flatQuestions.length - 1;
+      speakQuestion(nextIdx, 'full');
+    }
+
+    function updateTtsRate(val) {
+      STATE.ttsRate = parseFloat(val) || 1.0;
+      if (STATE.isSpeaking && STATE.activeFlatIndex >= 0) {
+        speakQuestion(STATE.activeFlatIndex, 'full');
+      }
+    }
+
+    // HTML Formatting Helpers
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatStemHtml(stem) {
+      let s = escapeHtml(stem);
+      s = s.replace(/\n/g, '<br/>');
+      return s;
+    }
+
+    // Boot Application on DOMContentLoaded
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSubjectTabCounts();
+      selectSubject('social');
+    });
+  </script>
+</body>
+</html>
